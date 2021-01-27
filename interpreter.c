@@ -1,22 +1,5 @@
 #include "specific.h"
 
-#define strsame(A, B) (strcmp(A, B) == 0)
-#define NINE 57
-#define ZERO 48
-#define MINUS 45
-#define POINT 46
-#define PLUS 43
-#define ASTERISK 42
-#define SLASH 47
-#define EPSILON 0.00001
-#define STRING p->wds[p->cw]
-#define NEXTSTRING p->cw = p->cw + 1;
-#define FULLCIRCLE 360
-#define TORADIANS *(M_PI/180) 
-#define ANGLE p->turtle.angle
-#define X p->turtle.x
-#define Y p->turtle.y
-
 int main(int argc, char** argv) {
 
     int i;
@@ -320,8 +303,16 @@ bool Do(Program *p){
         return false;
     }
     NEXTSTRING
-    
-    /*Loop back to cw until loop end*/
+    if (!Doloop(p, s)){
+        return false;
+    }
+    return true;
+}
+
+/*Execute do loop*/
+bool Doloop(Program *p, int s) {
+
+    /*Store cw and loop back until loop end*/
     p->v[s].word = p->cw;
     while((p->v[s].end + EPSILON) > p->v[s].val) {
         if (!Instructlst(p)) {
@@ -337,6 +328,7 @@ bool Do(Program *p){
     return true;
 }
 
+/*Draw in SDL*/
 void Draw(Program *p) {
 
     double newx, newy;
@@ -346,15 +338,13 @@ void Draw(Program *p) {
     newx = X + (distance * cos((double)ANGLE TORADIANS));
     newy = Y + ((int)distance * sin((double)ANGLE TORADIANS));
 
-    /*Plot and draw*/
     SDL_RenderDrawLine(p->sw.renderer, X, Y, newx, newy);
     
-    /*Update Coordinates*/
     X = newx;
     Y = newy;
 }
 
-/*Program to update the current angle*/
+/*Update the current angle*/
 void rotate_left(Program *p) {
 
     double left_turn;
@@ -369,7 +359,7 @@ void rotate_left(Program *p) {
     }
 }
 
-/*Program to update the current angle */
+/*Update the current angle */
 void rotate_right(Program *p) {
 
     double right_turn;
