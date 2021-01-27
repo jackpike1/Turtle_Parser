@@ -8,6 +8,7 @@
 #define PLUS 43
 #define ASTERISK 42
 #define SLASH 47
+#define EPSILON 0.00001
 #define STRING p->wds[p->cw]
 #define NEXTSTRING p->cw = p->cw + 1;
 #define FULLCIRCLE 360
@@ -208,7 +209,7 @@ bool OP(Program *p) {
     stack_pop(p->s, &g2);
     stack_pop(p->s, &g1);
 
-    /*Cast to int pointer and dereference*/
+    /*Cast to double pointer and dereference*/
     switch(*(int*)STRING){
         case MINUS:
             d = g1 - g2;
@@ -280,7 +281,8 @@ bool Set(Program *p) {
 
 bool Do(Program *p){
 
-    int d, e, s;
+    int s;
+    double d, e;
     
     if (!strsame(STRING, "DO")) {
         return false;
@@ -321,15 +323,15 @@ bool Do(Program *p){
     
     /*Loop back to cw until loop end*/
     p->v[s].word = p->cw;
-    while(p->v[s].val != p->v[s].end) {
+    while((p->v[s].end + EPSILON) > p->v[s].val) {
         if (!Instructlst(p)) {
             return false;
         }
         p->v[s].val += 1;
-        if (p->v[s].val == p->v[s].end) {
+        if ((p->v[s].end + EPSILON) > p->v[s].val) {
+            p->cw = p->v[s].word;
         }
         else {
-            p->cw = p->v[s].word;
         }
     }
     return true;
@@ -338,11 +340,11 @@ bool Do(Program *p){
 void Draw(Program *p) {
 
     double newx, newy;
-    int distance = getval(p);
+    double distance = getval(p);
 
     /*Convert angle to radians to calculate new coords*/
     newx = X + (distance * cos((double)ANGLE TORADIANS));
-    newy = Y + (distance * sin((double)ANGLE TORADIANS));
+    newy = Y + ((int)distance * sin((double)ANGLE TORADIANS));
 
     /*Plot and draw*/
     SDL_RenderDrawLine(p->sw.renderer, X, Y, newx, newy);
@@ -398,7 +400,7 @@ void addvar(Program *p) {
     p->v[i].o = true;
 }
 
-int findval(Program *p, char *c) {
+double findval(Program *p, char *c) {
 
     int i = 0;
 
@@ -414,11 +416,11 @@ int findval(Program *p, char *c) {
 }
 
 /*Return string number or value attributed to string*/
-int getval(Program *p) {
+double getval(Program *p) {
 
-    int value = atoi(STRING);
+    double value = atoi(STRING);
 
-    if (!value) {
+    if (value < EPSILON) {
         value = findval(p, STRING);
     }
     return value;
