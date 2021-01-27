@@ -26,8 +26,8 @@ int main(int argc, char** argv) {
 
     p.s = stack_init();
     /*To move into SDL screen*/
-    p.turtle.x = 400;
-    p.turtle.y = 300;
+    p.turtle.x = WWIDTH/2;
+    p.turtle.y = WHEIGHT/2;
     p.turtle.angle = 0;
 
     p.cw = 0;
@@ -79,10 +79,8 @@ bool Prog(Program *p) {
     if (p == NULL) {
         return false;
     }
-    
     if (!strsame(STRING, "{")){
-        fprintf(stderr, "Error: No start of program\n");
-        exit(2);
+        return false;
     }
     NEXTSTRING
     if (!Instructlst(p)) {
@@ -327,8 +325,12 @@ bool Do(Program *p){
         if (!Instructlst(p)) {
             return false;
         }
-        p->cw = p->v[s].word;
-        p->v[s].val = p->v[s].val + 1;
+        p->v[s].val += 1;
+        if (p->v[s].val == p->v[s].end) {
+        }
+        else {
+            p->cw = p->v[s].word;
+        }
     }
     return true;
 }
@@ -421,7 +423,6 @@ int getval(Program *p) {
     }
     return value;
 }
-
 
 /*Set end of the loop*/
 int getstruct(Program *p, char *c) {
