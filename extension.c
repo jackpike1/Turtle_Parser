@@ -1,21 +1,5 @@
 #include "specific.h"
 
-#define strsame(A, B) (strcmp(A, B) == 0)
-#define NINE 57
-#define ZERO 48
-#define MINUS 45
-#define POINT 46
-#define PLUS 43
-#define ASTERISK 42
-#define SLASH 47
-#define STRING p->wds[p->cw]
-#define NEXTSTRING p->cw = p->cw + 1;
-#define FULLCIRCLE 360
-#define HALFCIRCLE 180
-#define TORADIANS *(M_PI/180) 
-#define ANGLE p->turtle.angle
-#define X p->turtle.x
-#define Y p->turtle.y
 
 int main(int argc, char** argv) {
 
@@ -283,7 +267,8 @@ bool Set(Program *p) {
 
 bool Do(Program *p){
 
-    int d, e, s;
+    int s;
+    double d, e;
     
     if (!strsame(STRING, "DO")) {
         return false;
@@ -321,23 +306,32 @@ bool Do(Program *p){
         return false;
     }
     NEXTSTRING
+    if (!Doloop(p, s)) {
+        return false;
+    }
+    return true;
+}
+
+/*Execute do loop*/
+bool Doloop(Program *p, int s) {
     
-    /*Loop back to cw until loop end*/
+    /*Store cw to loop back to until loop end*/
     p->v[s].word = p->cw;
-    while(p->v[s].val != p->v[s].end) {
+    while((p->v[s].end + EPSILON) > p->v[s].val) {
         if (!Instructlst(p)) {
             return false;
         }
         p->v[s].val += 1;
-        if (p->v[s].val == p->v[s].end) {
+        if ((p->v[s].end + EPSILON) > p->v[s].val) {
+            p->cw = p->v[s].word;
         }
         else {
-            p->cw = p->v[s].word;
         }
     }
     return true;
 }
 
+/*Draw in SDL*/
 void Draw(Program *p) {
 
     double newx, newy;
@@ -347,16 +341,15 @@ void Draw(Program *p) {
     newx = X + (distance * cos((double)ANGLE TORADIANS));
     newy = Y + (distance * sin((double)ANGLE TORADIANS));
 
-    /*Plot and draw if pen is down*/
     if (!p->penup) {
         SDL_RenderDrawLine(p->sw.renderer, X, Y, newx, newy);
     }
-    /*Update Coordinates*/
+
     X = newx;
     Y = newy;
 }
 
-/*Program to update the current angle*/
+/*Update the current angle*/
 void rotate_left(Program *p) {
 
     double left_turn;
@@ -371,7 +364,7 @@ void rotate_left(Program *p) {
     }
 }
 
-/*Program to update the current angle */
+/*Update the current angle */
 void rotate_right(Program *p) {
 
     double right_turn;
@@ -402,7 +395,7 @@ void addvar(Program *p) {
     p->v[i].o = true;
 }
 
-int findval(Program *p, char *c) {
+double findval(Program *p, char *c) {
 
     int i = 0;
 
@@ -418,16 +411,15 @@ int findval(Program *p, char *c) {
 }
 
 /*Return string number or value attributed to string*/
-int getval(Program *p) {
+double getval(Program *p) {
 
-    int value = atoi(STRING);
+    double value = atoi(STRING);
 
-    if (!value) {
+    if (value < EPSILON) {
         value = findval(p, STRING);
     }
     return value;
 }
-
 
 /*Set end of the loop*/
 int getstruct(Program *p, char *c) {
